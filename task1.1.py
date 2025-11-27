@@ -1,37 +1,46 @@
-LOGFILE = "sample_auth_small.log"
+LOGFILE = "sample_auth_small.log"  
+# Назва файлу з логами, який будемо читати
+
 def ip_parse(line):
     """
-    Extracts the IP address that follows the token 'from' in the line.
-    Returns None if no 'from' token or no IP found.
+    Функція виділяє всі IP-адреси з одного рядка (через токени).
     """
-    if " from " in line:
-        parts = line.split()
-        try:
-            anchor = parts.index("from")
-            ip = parts[anchor + 1]
-            return ip.strip()
-        except (ValueError, IndexError):
-            return None
-    return None
+    parts = line.split()             # Розбиваємо рядок на слова (токени)
+    ips = []                         # Список, куди додамо знайдені IP
 
+    for token in parts:              # Перебираємо кожне слово рядка
+        token_clean = token.strip(",.;:")    # Прибираємо розділові знаки
+        numbers = token_clean.split(".")     # Розбиваємо слово по крапках
+        if len(numbers) == 4 and all(num.isdigit() for num in numbers):
+            ips.append(token_clean)          # Якщо це IP — додаємо його
+
+    return ips                             # Повертаємо список IP
 
 def main():
-    unique_ips = set()
-    lines_read = 0
+    unique_ips = set()      # Множина для зберігання унікальних IP
+    lines_read = 0          # Лічильник кількості прочитаних рядків
 
     with open("sample_auth_small.log", "r") as f:
-        for line in f:
-            lines_read += 1
-            ip = ip_parse(line)
-            if ip:
-                unique_ips.add(ip)
+        # Відкриваємо файл для читання
 
-    print(f"Lines read: {lines_read}")
-    print(f"Unique IPs: {len(unique_ips)}")
-    print(f"First 10 IPs: {sorted(unique_ips)[:10]}")
+        for line in f:                     # Читаємо файл рядок за рядком
+            lines_read += 1               # Збільшуємо лічильник рядків
+
+            ip = ip_parse(line)           # Викликаємо функцію парсингу IP
+            
+            if ip:                        # Якщо список IP не порожній
+                for one_ip in ip:         # Перебираємо всі IP у рядку
+                    unique_ips.add(one_ip)  # Додаємо у множину (уникнення дублікатів)
+
+    print(f"Lines read: {lines_read}")            # Виводимо кількість прочитаних рядків
+    print(f"Unique IPs: {len(unique_ips)}")       # Виводимо кількість унікальних IP
+    print(f"First 10 IPs: {list(sorted(unique_ips))[:10]}")  
+    # Виводимо перші 10 IP у відсортованому вигляді
 
 if __name__ == "__main__":
-    main()
+    main()  
+    # Запускаємо main() тільки якщо файл запущено напряму
+
 
 
 
